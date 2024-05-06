@@ -1,6 +1,9 @@
-import pytest
+from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.test.client import Client
+
+import pytest
 
 from news.models import News, Comment
 
@@ -31,7 +34,14 @@ def not_author_client(not_author):
 
 @pytest.fixture
 def news():
-    return News.objects.create(title='Заголовок', text='Текст')
+    return News.objects.bulk_create(
+        News(
+            title=f'Новость {index}',
+            text='Просто текст.',
+            date=datetime.today() - timedelta(days=index)
+        )
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+    )
 
 
 @pytest.fixture
