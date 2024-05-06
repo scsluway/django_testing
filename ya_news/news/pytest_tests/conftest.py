@@ -56,23 +56,43 @@ def one_news():
 
 
 @pytest.fixture
-def comment(author, one_news):
+def comment(author, one_news, comment_text):
     comment = Comment.objects.create(
         news=one_news,
         author=author,
-        text='Текст комментария'
+        text=comment_text
     )
     return comment
 
 
 @pytest.fixture
-def id_for_args(one_news):
+def id_news(one_news):
     return (one_news.id,)
 
 
 @pytest.fixture
-def detail_url(one_news):
-    return reverse('news:detail', args=(one_news.id,))
+def id_comment(comment):
+    return (comment.id,)
+
+
+@pytest.fixture
+def detail_url(id_news):
+    return reverse('news:detail', args=id_news)
+
+
+@pytest.fixture
+def url_to_comments(detail_url):
+    return detail_url + '#comments'
+
+
+@pytest.fixture
+def edit_url(id_comment):
+    return reverse('news:edit', args=id_comment)
+
+
+@pytest.fixture
+def delete_url(id_comment):
+    return reverse('news:delete', args=id_comment)
 
 
 @pytest.fixture
@@ -86,9 +106,16 @@ def create_comments(author, one_news):
 
 
 @pytest.fixture
-def form_data():
-    return {
-        'title': 'Новый заголовок',
-        'text': 'Новый текст',
-        'slug': 'new-slug'
-    }
+def comment_text():
+    return 'Текст комментария'
+
+
+@pytest.fixture
+def form_data(comment_text):
+    return {'text': comment_text}
+
+
+@pytest.fixture
+def new_comment_text(form_data):
+    form_data['text'] = 'Обновлённый комментарий'
+    return form_data

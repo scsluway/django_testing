@@ -13,7 +13,7 @@ EDIT_URL = 'news:edit'
     'name, args',
     (
         ('news:home', None),
-        ('news:detail', pytest.lazy_fixture('id_for_args')),
+        ('news:detail', pytest.lazy_fixture('id_news')),
         ('users:login', None),
         ('users:logout', None),
         ('users:signup', None),
