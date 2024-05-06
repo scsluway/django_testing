@@ -14,7 +14,9 @@ class TestContent(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create(username='author')
         cls.reader = User.objects.create(username='Reader')
-        cls.note = Note.objects.create(title='1', text='2', author=cls.author)
+        cls.note = Note.objects.create(
+            title='1', text='2', slug='note-slug', author=cls.author
+        )
 
     def test_notes_list_for_different_users(self):
         users = (
@@ -32,7 +34,7 @@ class TestContent(TestCase):
     def test_pages_contains_form(self):
         url_names = (
             ('notes:add', None),
-            ('notes:edit', (self.note.id,))
+            ('notes:edit', (self.note.slug,))
         )
         self.client.force_login(self.author)
         for name, args in url_names:

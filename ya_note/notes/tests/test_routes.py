@@ -16,11 +16,13 @@ class TestRoutes(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create(username='author')
         cls.reader = User.objects.create(username='Reader')
-        cls.note = Note.objects.create(title='1', text='2', author=cls.author)
+        cls.note = Note.objects.create(
+            title='1', text='2', slug='note-slug', author=cls.author
+        )
         cls.auth_urls = (
-            ('detail', (cls.note.id,)),
-            ('edit', (cls.note.id,)),
-            ('delete', (cls.note.id,)),
+            ('detail', (cls.note.slug,)),
+            ('edit', (cls.note.slug,)),
+            ('delete', (cls.note.slug,)),
             ('list', None),
             ('add', None),
             ('success', None)

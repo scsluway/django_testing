@@ -20,7 +20,9 @@ class TestContent(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create(username='author')
         cls.reader = User.objects.create(username='Reader')
-        cls.note = Note.objects.create(title='1', text='2', author=cls.author)
+        cls.note = Note.objects.create(
+            title='1', text='2', slug='note-slug', author=cls.author
+        )
         cls.auth_client = Client()
         cls.not_auth_client = Client()
         cls.not_auth_client.force_login(cls.reader)
