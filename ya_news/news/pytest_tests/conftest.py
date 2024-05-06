@@ -3,10 +3,13 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 
 from news.models import News, Comment
+
+now = timezone.now()
 
 
 @pytest.fixture
@@ -70,6 +73,16 @@ def id_for_args(one_news):
 @pytest.fixture
 def detail_url(one_news):
     return reverse('news:detail', args=(one_news.id,))
+
+
+@pytest.fixture
+def create_comments(author, one_news):
+    for index in range(10):
+        comment = Comment.objects.create(
+            news=one_news, author=author, text=f'Tекст {index}',
+        )
+        comment.created = now + timedelta(days=index)
+        comment.save()
 
 
 @pytest.fixture

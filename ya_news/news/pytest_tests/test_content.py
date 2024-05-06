@@ -39,7 +39,7 @@ def test_authorized_client_has_form(author_client, detail_url):
     assert isinstance(response.context['form'], CommentForm)
 
 
-@pytest.mark.django_db
+@pytest.mark.usefixtures('create_comments')
 def test_comments_order(detail_url, client):
     response = client.get(detail_url)
     assert 'news' in response.context
