@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.test.client import Client
+from django.urls import reverse
 
 import pytest
 
@@ -33,7 +34,7 @@ def not_author_client(not_author):
 
 
 @pytest.fixture
-def news():
+def many_news():
     return News.objects.bulk_create(
         News(
             title=f'Новость {index}',
@@ -45,9 +46,16 @@ def news():
 
 
 @pytest.fixture
-def comment(author, news):
+def one_news():
+    return News.objects.create(
+        title='Тестовая новость', text='Просто текст.'
+    )
+
+
+@pytest.fixture
+def comment(author, one_news):
     comment = Comment.objects.create(
-        news=news,
+        news=one_news,
         author=author,
         text='Текст комментария'
     )
@@ -55,8 +63,13 @@ def comment(author, news):
 
 
 @pytest.fixture
-def id_for_args(news):
-    return (news.id,)
+def id_for_args(one_news):
+    return (one_news.id,)
+
+
+@pytest.fixture
+def detail_url(one_news):
+    return reverse('news:detail', args=(one_news.id,))
 
 
 @pytest.fixture
