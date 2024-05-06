@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -10,7 +8,7 @@ from notes.forms import NoteForm
 User = get_user_model()
 
 
-class TestRoutes(TestCase):
+class TestContent(TestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -19,12 +17,12 @@ class TestRoutes(TestCase):
         cls.note = Note.objects.create(title='1', text='2', author=cls.author)
 
     def test_notes_list_for_different_users(self):
-        users_statuses = (
+        users = (
             (self.author, True),
             (self.reader, False)
         )
         url = reverse('notes:list')
-        for user, note_in_list in users_statuses:
+        for user, note_in_list in users:
             with self.subTest(user=user):
                 self.client.force_login(user)
                 response = self.client.get(url)
