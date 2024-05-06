@@ -30,26 +30,24 @@ class TestContent(TestCase):
             'slug': 'new-slug'
         }
 
-    def test_user_can_create_note_and_test_anonymous_user_cant(self):
-        clients = (self.auth_client, self.client)
+    def test_user_can_create_note(self):
+        self.note.delete()
+        response = self.auth_client.post(self.ADD_URL, data=self.form_data)
+        self.assertRedirects(response, self.SUCCESS_URL)
+        self.assertEqual(Note.objects.count(), 1)
+        new_note = Note.objects.get()
+        self.assertEqual(new_note.title, self.form_data['title'])
+        self.assertEqual(new_note.text, self.form_data['text'])
+        self.assertEqual(new_note.slug, self.form_data['slug'])
+        self.assertEqual(new_note.author, self.author)
+
+    def test_anonymous_user_cant_create_note(self):
+        self.note.delete()
+        response = self.client.post(self.ADD_URL, data=self.form_data)
         login_url = reverse('users:login')
-        for client in clients:
-            Note.objects.get().delete()
-            with self.subTest(client=client):
-                response = client.post(self.ADD_URL, data=self.form_data)
-                note_count = Note.objects.count()
-                if note_count:
-                    self.assertRedirects(response, self.SUCCESS_URL)
-                    self.assertEqual(note_count, 1)
-                    new_note = Note.objects.get()
-                    self.assertEqual(new_note.title, self.form_data['title'])
-                    self.assertEqual(new_note.text, self.form_data['text'])
-                    self.assertEqual(new_note.slug, self.form_data['slug'])
-                    self.assertEqual(new_note.author, self.author)
-                else:
-                    expected_url = f'{login_url}?next={self.ADD_URL}'
-                    self.assertRedirects(response, expected_url)
-                    self.assertEqual(note_count, 0)
+        expected_url = f'{login_url}?next={self.ADD_URL}'
+        self.assertRedirects(response, expected_url)
+        self.assertEqual(Note.objects.count(), 0)
 
     def test_not_unique_slug(self):
         self.form_data['slug'] = self.note.slug
