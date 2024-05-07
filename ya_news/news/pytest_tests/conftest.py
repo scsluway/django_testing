@@ -1,15 +1,12 @@
 from datetime import datetime, timedelta
 
+import pytest
 from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
 from django.utils import timezone
 
-import pytest
-
 from news.models import News, Comment
-
-now = timezone.now()
 
 
 @pytest.fixture
@@ -56,28 +53,18 @@ def one_news():
 
 
 @pytest.fixture
-def comment(author, one_news, comment_text):
+def comment(author, one_news):
     comment = Comment.objects.create(
         news=one_news,
         author=author,
-        text=comment_text
+        text='Текст комментария'
     )
     return comment
 
 
 @pytest.fixture
-def id_news(one_news):
-    return (one_news.id,)
-
-
-@pytest.fixture
-def id_comment(comment):
-    return (comment.id,)
-
-
-@pytest.fixture
-def detail_url(id_news):
-    return reverse('news:detail', args=id_news)
+def detail_url(one_news):
+    return reverse('news:detail', args=(one_news.pk,))
 
 
 @pytest.fixture
@@ -86,13 +73,13 @@ def url_to_comments(detail_url):
 
 
 @pytest.fixture
-def edit_url(id_comment):
-    return reverse('news:edit', args=id_comment)
+def edit_url(comment):
+    return reverse('news:edit', args=(comment.pk,))
 
 
 @pytest.fixture
-def delete_url(id_comment):
-    return reverse('news:delete', args=id_comment)
+def delete_url(comment):
+    return reverse('news:delete', args=(comment.pk,))
 
 
 @pytest.fixture
@@ -101,21 +88,10 @@ def create_comments(author, one_news):
         comment = Comment.objects.create(
             news=one_news, author=author, text=f'Tекст {index}',
         )
-        comment.created = now + timedelta(days=index)
+        comment.created = timezone.now() + timedelta(days=index)
         comment.save()
 
 
 @pytest.fixture
-def comment_text():
-    return 'Текст комментария'
-
-
-@pytest.fixture
-def form_data(comment_text):
-    return {'text': comment_text}
-
-
-@pytest.fixture
-def new_comment_text(form_data):
-    form_data['text'] = 'Обновлённый комментарий'
-    return form_data
+def home_url():
+    return reverse('news:home')
