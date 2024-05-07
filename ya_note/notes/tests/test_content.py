@@ -1,45 +1,25 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.urls import reverse
-
-from notes.models import Note
+from .fixtures import TestFixtures
 from notes.forms import NoteForm
 
-User = get_user_model()
 
-
-class TestContent(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.author = User.objects.create(username='author')
-        cls.reader = User.objects.create(username='Reader')
-        cls.note = Note.objects.create(
-            title='1', text='2', slug='note-slug', author=cls.author
-        )
+class TestContent(TestFixtures):
 
     def test_notes_list_for_different_users(self):
-        users = (
-            (self.author, True),
-            (self.reader, False)
+        clients = (
+            (self.auth_client, True),
+            (self.not_auth_client, False)
         )
-        url = reverse('notes:list')
-        for user, note_in_list in users:
-            with self.subTest(user=user):
-                self.client.force_login(user)
-                response = self.client.get(url)
-                object_list = response.context['object_list']
-                self.assertEqual((self.note in object_list), note_in_list)
+        for client, note_in_list in clients:
+            with self.subTest(client=client):
+                response = client.get(self.list_url)
+                self.assertEqual(
+                    (self.note in response.context['object_list']),
+                    note_in_list
+                )
 
     def test_pages_contains_form(self):
-        url_names = (
-            ('notes:add', None),
-            ('notes:edit', (self.note.slug,))
-        )
-        self.client.force_login(self.author)
-        for name, args in url_names:
-            with self.subTest(name=name):
-                url = reverse(name, args=args)
-                response = self.client.get(url)
+        for url in (self.add_url, self.edit_url):
+            with self.subTest(url=url):
+                response = self.auth_client.get(url)
                 self.assertIn('form', response.context)
                 self.assertIsInstance(response.context['form'], NoteForm)

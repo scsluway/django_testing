@@ -1,5 +1,5 @@
-from random import choice
 from http import HTTPStatus
+from random import choice
 
 import pytest
 from pytest_django.asserts import assertRedirects, assertFormError
@@ -84,8 +84,8 @@ def test_author_can_edit_comment(
 def test_user_cant_edit_comment_of_another_user(
         edit_url, not_author_client, comment
 ):
+    comment_from_db = Comment.objects.get(pk=comment.pk)
     response = not_author_client.post(edit_url, data=FORM_NEW_DATA)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comment_from_db = Comment.objects.get(pk=comment.pk)
     assert comment.text == comment_from_db.text
     assert comment.author == comment_from_db.author
