@@ -1,54 +1,59 @@
-from http import HTTPStatus
-
-from django.urls import reverse
+from django.contrib.auth import get_user
 
 from .fixtures import TestFixtures
 
 
 class TestRoutes(TestFixtures):
-    AUTH_NAMESPACE = 'notes:'
 
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
         cls.auth_urls = (
-            (cls.detail_url, True),
-            (cls.edit_url, True),
-            (cls.delete_url, True),
-            (cls.list_url, False),
-            (cls.add_url, False),
-            (cls.success_url, False),
+            (cls.detail_url, cls.auth_client, cls.STATUS_OK),
+            (cls.edit_url, cls.auth_client, cls.STATUS_OK),
+            (cls.delete_url, cls.auth_client, cls.STATUS_OK),
+
+            (cls.detail_url, cls.reader_client, cls.STATUS_NOT_FOUND),
+            (cls.edit_url, cls.reader_client, cls.STATUS_NOT_FOUND),
+            (cls.delete_url, cls.reader_client, cls.STATUS_NOT_FOUND),
+        )
+        cls.url_for_redirects = (
+            cls.detail_url,
+            cls.edit_url,
+            cls.delete_url,
+        )
+        cls.reader_urls = (
+            cls.list_url,
+            cls.add_url,
+            cls.success_url,
+        )
+        cls.anonymous_urls = (
+            cls.home_url,
+            cls.login_url,
+            cls.logout_url,
+            cls.signup_url
         )
 
     def test_pages_availability_for_everyone(self):
-        urls = {
-            self.AUTH_NAMESPACE: ('home',),
-            'users:': ('login', 'logout', 'signup')
-        }
-        for spacename, names in urls.items():
-            for name in names:
-                with self.subTest(name=name):
-                    url = reverse(spacename + name)
-                    response = self.client.get(url)
-                    self.assertEqual(response.status_code, HTTPStatus.OK)
+        for url in self.anonymous_urls:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, self.STATUS_OK)
 
-    def test_pages_availability_for_auth_users(self):
-        users_statuses = (
-            (self.auth_client, HTTPStatus.OK),
-            (self.not_auth_client, HTTPStatus.NOT_FOUND)
-        )
-        for client, status in users_statuses:
-            for url in self.auth_urls:
-                with self.subTest(client=client):
-                    response = client.get(url[0])
-                    if url[1]:
-                        self.assertEqual(response.status_code, status)
-                    else:
-                        self.assertEqual(response.status_code, HTTPStatus.OK)
+    def test_pages_availability_for_auth_user(self):
+        for url in self.reader_urls:
+            with self.subTest(url=url):
+                response = self.reader_client.get(url)
+                assert response.status_code == self.STATUS_OK
+
+    def test_pages_availability_for_different_users(self):
+        for url, client, status in self.auth_urls:
+            with self.subTest(client=get_user(client), status=status):
+                response = client.get(url)
+                self.assertEqual(response.status_code, status)
 
     def test_redirects(self):
-        for url in self.auth_urls:
-            url = url[0]
+        for url in self.url_for_redirects:
             with self.subTest(url=url):
                 expected_url = f'{self.login_url}?next={url}'
                 response = self.client.get(url)

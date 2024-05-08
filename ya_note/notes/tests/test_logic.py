@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from pytils.translit import slugify
 
 from .fixtures import TestFixtures
@@ -71,9 +69,9 @@ class TestNoteCreation(TestFixtures):
 
     def test_other_user_cant_edit_note(self):
         author = self.note.author
-        response = self.not_auth_client.post(self.edit_url, self.form_data)
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        note_from_db = Note.objects.get(id=self.note.id)
+        response = self.reader_client.post(self.edit_url, self.form_data)
+        self.assertEqual(response.status_code, self.STATUS_NOT_FOUND)
+        note_from_db = Note.objects.get(id=self.note.pk)
         self.assertEqual(self.note.title, note_from_db.title)
         self.assertEqual(self.note.text, note_from_db.text)
         self.assertEqual(self.note.slug, note_from_db.slug)
@@ -87,6 +85,6 @@ class TestNoteCreation(TestFixtures):
 
     def test_other_user_cant_delete_note(self):
         notes_count = Note.objects.count()
-        response = self.not_auth_client.post(self.delete_url)
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        response = self.reader_client.post(self.delete_url)
+        self.assertEqual(response.status_code, self.STATUS_NOT_FOUND)
         self.assertEqual(Note.objects.count(), notes_count)

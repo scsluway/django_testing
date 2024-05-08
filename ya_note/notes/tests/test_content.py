@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user
+
 from .fixtures import TestFixtures
 from notes.forms import NoteForm
 
@@ -7,10 +9,10 @@ class TestContent(TestFixtures):
     def test_notes_list_for_different_users(self):
         clients = (
             (self.auth_client, True),
-            (self.not_auth_client, False)
+            (self.reader_client, False)
         )
         for client, note_in_list in clients:
-            with self.subTest(client=client):
+            with self.subTest(client=get_user(client)):
                 response = client.get(self.list_url)
                 self.assertEqual(
                     (self.note in response.context['object_list']),
