@@ -13,31 +13,22 @@ STATUS_NOT_FOUND = HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.parametrize(
-    'url',
-    (
-        reverse('news:home'),
-        (pytest.lazy_fixture('detail_url')),
-        reverse('users:login'),
-        reverse('users:logout'),
-        reverse('users:signup'),
-    )
-)
-def test_pages_availability(client, url):
-    response = client.get(url)
-    assert response.status_code == STATUS_OK
-
-
-@pytest.mark.parametrize(
     'reverse_url, parametrized_client, status',
     (
         (lf('edit_url'), lf('not_author_client'), STATUS_NOT_FOUND),
         (lf('delete_url'), lf('not_author_client'), STATUS_NOT_FOUND),
 
         (lf('edit_url'), lf('author_client'), STATUS_OK),
-        (lf('delete_url'), lf('author_client'), STATUS_OK)
+        (lf('delete_url'), lf('author_client'), STATUS_OK),
+
+        (lf('home_url'), lf('client'), STATUS_OK),
+        (lf('login_url'), lf('client'), STATUS_OK),
+        (lf('logout_url'), lf('client'), STATUS_OK),
+        (lf('signup_url'), lf('client'), STATUS_OK),
+        (lf('detail_url'), lf('client'), STATUS_OK),
     ),
 )
-def test_availability_for_comment_edit_and_delete(
+def test_pages_availability(
         parametrized_client, reverse_url, status
 ):
     response = parametrized_client.get(reverse_url)
